@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+clap = { version = "4.5.19", features = ["derive"] }
+tokio-test = "0.4.4"
+yahoo_finance_api = "2.3.0"
+time = "0.3.20"
+chrono = "0.4.24"
