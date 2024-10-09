@@ -19,7 +19,7 @@ pub fn get_by_name(name: &String) -> Vec<Quote>{
         return vec![];
     }
 
-    // returns historic quotes coverd 6 months with daily interval
+    // Returns historic quotes coverd 6 months with daily interval
     let resp = tokio_test::block_on(provider.get_quote_range(name, "1d", "6mo")).unwrap();
     
     resp.quotes().unwrap()
@@ -29,7 +29,7 @@ pub fn functional_test() {
     let quotes = get_by_name(&"AAPL".to_string());
 
     for q in quotes {
-        let local_datetime: DateTime<Local> = DateTime::from_timestamp(q.timestamp as i64, 0).unwrap().into(); // 使用 into() 转为 Local
+        let local_datetime: DateTime<Local> = DateTime::from_timestamp(q.timestamp as i64, 0).unwrap().into();
 
         println!("{:?}", local_datetime.format("%Y-%m-%d %H:%M:%S"));
     }
