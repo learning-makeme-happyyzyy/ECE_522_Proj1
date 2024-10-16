@@ -1,4 +1,6 @@
 mod core;
+use core::stock_ticker::functional_test;
+
 use clap::Parser;
 
 /// Simple program to monitor stock tickers
@@ -12,4 +14,6 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
+
+    functional_test(&args.name);
 }
