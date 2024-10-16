@@ -40,6 +40,7 @@ pub fn get_by_symbol(name: &String) -> Vec<Quote>{
 
 fn vec_quotes_to_closing_prices(quotes: &Vec<Quote>) -> Vec<(chrono::NaiveDateTime, f64)> {
     let closing_prices: Vec<(chrono::NaiveDateTime, f64)> = quotes
+    
     .iter()
     .map(|quote| {
         let datetime = chrono::NaiveDateTime::from_timestamp(quote.timestamp as i64, 0);
