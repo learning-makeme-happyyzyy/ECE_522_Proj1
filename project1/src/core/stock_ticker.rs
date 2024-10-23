@@ -1,9 +1,9 @@
-// Task1: Parse input and handle the stock ticker
 use yahoo_finance_api::{self as yahoo, Quote};
 use tokio_test;
 use chrono::*;
+mod chart;
 
-pub fn get_by_symbol(name: &String) -> Vec<Quote>{
+pub fn get_by_symbol(name: &String) -> Vec<Quote> {
     // Handle invalid input
     if name.chars().all(|c| !c.is_alphabetic()) {
         println!("Invalid input");
@@ -18,16 +18,16 @@ pub fn get_by_symbol(name: &String) -> Vec<Quote>{
         Ok(quotes) => {
             if quotes.quotes.len() == 0 {
                 println!("Symbol not found");
-                return vec![]
+                return vec![];
             }
         }
         Err(e) => {
             eprintln!("Failed to retrieve quotes: {:?}", e);
-            return vec![]
+            return vec![];
         }
     }
 
-    // Returns historic quotes coverd 6 months with daily interval
+    // Returns historic quotes covered 6 months with daily interval
     let resp = tokio_test::block_on(provider.get_quote_range(name, "1d", "6mo"));
     match resp {
         Ok(quotes) => quotes.quotes().unwrap(),
@@ -40,18 +40,17 @@ pub fn get_by_symbol(name: &String) -> Vec<Quote>{
 
 fn vec_quotes_to_closing_prices(quotes: &Vec<Quote>) -> Vec<(chrono::NaiveDateTime, f64)> {
     let closing_prices: Vec<(chrono::NaiveDateTime, f64)> = quotes
-    
-    .iter()
-    .map(|quote| {
-        let datetime = chrono::NaiveDateTime::from_timestamp(quote.timestamp as i64, 0);
-        (datetime, quote.close)
-    })
-    .collect();
+        .iter()
+        .map(|quote| {
+            let datetime = chrono::NaiveDateTime::from_timestamp(quote.timestamp as i64, 0);
+            (datetime, quote.close)
+        })
+        .collect();
 
     closing_prices
 }
 
-pub fn find_volatile_days(quotes: &Vec<Quote>) -> Vec<chrono::NaiveDateTime> {
+pub fn find_volatile_days(quotes: &Vec<Quote>) -> Vec<String> {
     let closing_prices = vec_quotes_to_closing_prices(quotes);
 
     let mut volatile_days = Vec::new();
@@ -62,18 +61,18 @@ pub fn find_volatile_days(quotes: &Vec<Quote>) -> Vec<chrono::NaiveDateTime> {
         let variation = ((price2 - price1) / price1).abs();
 
         if variation > 0.02 {
-            volatile_days.push(date2);
+            volatile_days.push(date2.format("%Y-%m-%d %H:%M:%S").to_string());
         }
     }
 
-    println!("Volatile days: {:?}", volatile_days);
+    // println!("Volatile days: {:?}", volatile_days);
 
     volatile_days
 }
 
 pub fn find_min_max_closing_prices(quotes: &Vec<Quote>) -> (f64, NaiveDateTime, f64, NaiveDateTime) {
     let closing_prices = vec_quotes_to_closing_prices(quotes);
-    
+
     let (mut minp, mut mind, mut maxp, mut maxd) = (0.0, NaiveDateTime::from_timestamp(0, 0), 0.0, NaiveDateTime::from_timestamp(0, 0));
     if let Some((min_date, min_price)) = closing_prices.iter().min_by(|a, b| a.1.partial_cmp(&b.1).unwrap()) {
         minp = min_price.clone();
@@ -96,10 +95,11 @@ pub fn functional_test(symbol: &String) {
     for q in &quotes {
         let local_datetime: DateTime<Local> = DateTime::from_timestamp(q.timestamp as i64, 0).unwrap().into();
 
-        println!("{:?}", local_datetime.format("%Y-%m-%d %H:%M:%S"));
-        println!("{:?}", q);
+        // println!("{:?}", local_datetime.format("%Y-%m-%d %H:%M:%S"));
+        // println!("{:?}", q);
     }
 
-    find_volatile_days(&quotes);
+    let volatile_days = find_volatile_days(&quotes);
     find_min_max_closing_prices(&quotes);
+    chart::print_closing_prices_and_dates(&quotes, &volatile_days);
 }
