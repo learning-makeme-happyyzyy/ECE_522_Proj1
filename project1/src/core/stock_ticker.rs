@@ -91,6 +91,11 @@ pub fn find_min_max_closing_prices(quotes: &Vec<Quote>) -> (f64, NaiveDateTime, 
 
 pub fn functional_test(symbol: &String) {
     let quotes = get_by_symbol(&symbol.to_string());
+    
+    if quotes.is_empty() {
+        println!("Stock symbol not exist: {}, please input a correct stock symbol", symbol);
+        return; // no data
+    }
 
     for q in &quotes {
         let local_datetime: DateTime<Local> = DateTime::from_timestamp(q.timestamp as i64, 0).unwrap().into();
@@ -101,5 +106,5 @@ pub fn functional_test(symbol: &String) {
 
     let volatile_days = find_volatile_days(&quotes);
     find_min_max_closing_prices(&quotes);
-    chart::print_closing_prices_and_dates(&quotes, &volatile_days);
+    chart::print_closing_prices_and_dates(&quotes, &volatile_days, symbol);
 }
